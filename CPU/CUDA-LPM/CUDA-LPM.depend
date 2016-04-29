@@ -1,0 +1,22 @@
+# depslib dependency file v1.0
+1461886721 source:/home/jedrek/Dokumenty/studies/CUDAcpu/CUDA-LPM/main.c
+	<stdio.h>
+	<stdlib.h>
+	"time.h"
+	"string.h"
+	"stdlib.h"
+	"generator.h"
+	"bruteforce.h"
+
+1461886517 /home/jedrek/Dokumenty/studies/CUDAcpu/CUDA-LPM/generator.h
+	"time.h"
+	"stdlib.h"
+	"mersenne_twister.h"
+	"bruteforce.h"
+
+1461869301 /home/jedrek/Dokumenty/studies/CUDAcpu/CUDA-LPM/mersenne_twister.h
+	<stdio.h>
+	<stdlib.h>
+
+1461887130 /home/jedrek/Dokumenty/studies/CUDAcpu/CUDA-LPM/bruteforce.h
+
