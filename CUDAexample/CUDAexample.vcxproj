@@ -158,11 +158,16 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bruteforce.h" />
     <ClInclude Include="functions.h" />
     <ClInclude Include="generator.h" />
     <ClInclude Include="print.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="structures.h" />
     <ClInclude Include="trie.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CUDA-longest-prefix-match.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

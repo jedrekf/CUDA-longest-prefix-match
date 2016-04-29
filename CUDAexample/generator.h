@@ -1,4 +1,7 @@
-#pragma once
+#ifndef HEADER_GENERATOR
+#define HEADER_GENERATOR
+//For generating random sets of IPs and Masks using a CPU
+
 #include "stdio.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
@@ -14,26 +17,28 @@ int generate_ip_addresses(u_char *ips);
 int generate_masks(u_char *masks);
 
 int generate_ip_addresses(u_char *ips){
-	srand(time(NULL));
+	srand(time(NULL)%10);
 	int r;
 	for (int i = 0; i < NUM_IPS*IPV4_B; i++){
 		r = rand() % 256;
 		ips[i] = r;
 	}
-	print_ip(ips);
+	//print_ip(ips);
 	return 0;
 }
 
 int generate_masks(u_char *masks){
-	srand(time(NULL));
+	srand(time(NULL)%50);
 	int r;
 	for (int i = 1; i < NUM_MASKS*IPV4M_B+1; i++){
-		if (i%5==0)
+		if (i%IPV4M_B==0)
 			r = (rand() % 32)+1;
 		else
 			r = rand() % 256;
 		masks[i - 1] = r;
 	}
-	print_mask(masks);
+	//print_mask(masks);
 	return 0;
 }
+
+#endif
