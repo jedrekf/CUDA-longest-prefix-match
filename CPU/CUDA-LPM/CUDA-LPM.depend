@@ -20,3 +20,30 @@
 
 1461887130 /home/jedrek/Dokumenty/studies/CUDAcpu/CUDA-LPM/bruteforce.h
 
+1461971593 source:/home/jedrek/Dokumenty/studies/CUDA-longest-prefix-match/CPU/CUDA-LPM/main.c
+	<stdio.h>
+	<stdlib.h>
+	"time.h"
+	"string.h"
+	"stdlib.h"
+	"generator.h"
+	"bruteforce.h"
+	"tree_creator.h"
+
+1461919918 /home/jedrek/Dokumenty/studies/CUDA-longest-prefix-match/CPU/CUDA-LPM/generator.h
+	"time.h"
+	"stdlib.h"
+	"mersenne_twister.h"
+	"bruteforce.h"
+
+1461919918 /home/jedrek/Dokumenty/studies/CUDA-longest-prefix-match/CPU/CUDA-LPM/mersenne_twister.h
+	<stdio.h>
+	<stdlib.h>
+
+1461928750 /home/jedrek/Dokumenty/studies/CUDA-longest-prefix-match/CPU/CUDA-LPM/bruteforce.h
+
+1461973149 /home/jedrek/Dokumenty/studies/CUDA-longest-prefix-match/CPU/CUDA-LPM/tree_creator.h
+	"trie.h"
+
+1461970486 /home/jedrek/Dokumenty/studies/CUDA-longest-prefix-match/CPU/CUDA-LPM/trie.h
+

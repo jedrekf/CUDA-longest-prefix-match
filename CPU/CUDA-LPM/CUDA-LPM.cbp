@@ -37,6 +37,8 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="mersenne_twister.h" />
+		<Unit filename="tree_creator.h" />
+		<Unit filename="trie.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

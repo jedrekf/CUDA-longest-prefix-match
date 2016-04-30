@@ -6,6 +6,7 @@
 #include "stdlib.h"
 #include "generator.h"
 #include "bruteforce.h"
+#include "tree_creator.h"
 
 char *byte_to_binary(int x)
 {
@@ -44,11 +45,14 @@ int main()
 
     generate_ip_addresses(ips);
     generate_ip_masks(masks);
-
+    printf("Executing bruteforce algorithm!\n");
     bruteforce(ips, masks, assignedMasks);
-
+    printf("Writing output to file\n");
     writeToFile(ips, assignedMasks);
+    printf("Allocating tree root\n");
+    TreeNode *root=(TreeNode*) malloc(sizeof(TreeNode));
 
+    createTree(root, masks, NUM_MASKS*2); // passing the root, masks and their size
 
     free(ips);
     free(masks);
