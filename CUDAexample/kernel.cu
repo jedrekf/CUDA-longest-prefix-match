@@ -5,6 +5,7 @@
 #include "trie.h"
 #include "generator.h"
 #include "bruteforce.h"
+#include "print.h"
 
 int main()
 { 
@@ -18,8 +19,9 @@ int main()
 	
 	///////////////////////////// INIT IPS AND MASKS ///////////////////////////
 	//init ips and masks
-	u_char *ips= (u_char*)malloc(NUM_IPS*IPV4_B*sizeof(u_char));
-	u_char *masks = (u_char*)malloc(NUM_MASKS*IPV4M_B* sizeof(u_char));
+	unsigned int *ips = (unsigned int*)malloc(NUM_IPS * sizeof(unsigned int));
+	unsigned int *masks = (unsigned int*)malloc(NUM_MASKS * sizeof(unsigned int) * 2);
+	unsigned int *assignedMasks = (unsigned int*)malloc(NUM_IPS * sizeof(unsigned int) * 2);
 
 	printf("mem for IPs and MASKs allocated.\n");
 	////////////////////////////////////////////////////////////////////////////
@@ -29,17 +31,16 @@ int main()
 
 	generate_ip_addresses(ips);
 	printf("IPs generated on CPU");
-	generate_masks(masks);
+	generate_ip_masks(masks);
 	printf("Masks generated on CPU");
 	////////////////////////////// BRUTE FORCE //////////////////////////////////
-	u_char *assignedMasks = (u_char*)malloc(NUM_IPS * IPV4M_B * sizeof(u_char));
 	cudaEventRecord(start);
-	bruteforce(ips, masks, assignedMasks, NUM_IPS*IPV4_B, NUM_MASKS*IPV4M_B);
+	bruteforce(ips, masks, assignedMasks);
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&elapsedTime, start, stop);
 	printf("time elapsed: %f\n", elapsedTime);
-	wrtiteToFile(ips, assignedMasks);
+	writeToFile(ips, assignedMasks);
 	////////////////////////////////////////////////////////////////////////////
 
 	//Array for determining the first byte of mask (limit tree nodes)

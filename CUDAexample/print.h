@@ -58,22 +58,31 @@ void printAssigned(u_char* ips, u_char* masks){
 	}
 }
 
-void wrtiteToFile(u_char *ips, u_char *masks){
+char *byte_to_binary(int x)
+{
+	static char b[33];
+	b[0] = '\0';
 
-	FILE *f = fopen("assignedIP-mask.txt", "wb");
-	if (f == NULL)
+	unsigned int z = 0;
+	for (z = 2147483648; z > 0; z >>= 1)
 	{
-		printf("Error opening file!\n");
+		strcat(b, ((x & z) == z) ? "1" : "0");
+	}
+
+	return b;
+}
+
+void writeToFile(unsigned int *ips, unsigned int *masks){
+	FILE *f = fopen("assigned-ips-masks", "wb");
+	if (f == NULL){
+		printf("Error opening file\n");
 		exit(1);
 	}
-	int j = 0;
-	for (int i = 0; i < NUM_IPS*IPV4_B; i++){
-		fprintf(f, "IP: %d.%d.%d.%d Mask: %d.%d.%d.%d/%d\n", ips[i], ips[i+1], ips[i+2], ips[i+3],
-			masks[j],masks[j+1], masks[j+2], masks[j+3], masks[j+4]);
-		i += 3;
-		j += 5;
+	int i, j;
+	for (i = 0; i<NUM_IPS; i++){
+		j = i << 1;
+		fprintf(f, "IP: %s ", byte_to_binary(ips[i]));
+		fprintf(f, "Mask %s / %d\n", byte_to_binary(masks[j]), masks[j + 1]);
 	}
-
-	fclose(f);
 }
 #endif

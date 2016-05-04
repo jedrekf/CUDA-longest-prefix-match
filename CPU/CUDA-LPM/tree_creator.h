@@ -92,11 +92,10 @@ void byteArray(u_char *ba, unsigned int *masks,unsigned int masks_size, u_char b
                 ba[j-1] = (ba[j-1] | newval);
             }
             else if(masks[i] == 8){
-                ba[j] = 0;
                 masks[i] -= 8;
             }
             else{
-                ba[j] = 1;
+                ba[j] = 0; // marks that it's not Edn of Mask
                 masks[i] -= 8;
             }
             j+=3;
@@ -120,33 +119,40 @@ void createTree(TreeNode *root, unsigned int *masks, unsigned int masks_size){
     u_char byte_number = 1;
     u_char *chldrn_arr;
     u_char children_count = 0;
-    printf("Check what children exist and count them!\n");
+
     chldrn_arr = childrenArray(masks, masks_size, byte_number); // get if what children with what keys exist
     children_count = childrenCount(chldrn_arr);
+    printf("There exist %d children for this node!\n", children_count);
     //byte array
     u_char *ba= (u_char*)malloc((BYTE_MAX+1) * sizeof(u_char)* 3); // [0-255, 0000 0000, 0, 0-255, 0010 1000, 1]
 
     for(i=0; i<=BYTE_MAX*3; i+=3){ // 0-255
-        if(chldrn_arr[i/3])
-            ba[i] = i/3;
+        if(chldrn_arr[i/3]){
+            ba[i] = i/3;  // assign keys
+            printf("children: %d exists\n", ba[i]);
+        }
         else
             ba[i] = 0;
-        ba[i+2] = 0;
+
+        ba[i+1] = 0;    // assign bits = {0000 0000}
+        ba[i+2] = 1;    // assign endOfMask = true
     }
     printf("Byte magic!\n");
     byteArray(ba, masks, masks_size, byte_number);
 
     printf("Create the nodes of a tree\n");
     //based om ba create tree level CREATING A NODE AT CURRENT LEVEL
-    if(root == nullptr){
+    if(root == NULL){
         root = create_treenode(0,0,children_count);
     }else{
-        root = create_treenode();
+        // create a child
     }
+
     u_char *ba_stripped = (u_char*)malloc(children_count * 3 * sizeof(u_char)); //or counter + 1
     int j=0;
     for(i=0; i<BYTE_MAX*3; i+=3){
-        if(ba[i] == 0 && ba[i+2] == 1){
+        if(!(ba[i] == 0 && ba[i+1] == 0 &&ba[i+2] == 1)){ //check if the Byte address appeared at all
+            printf("node key: %d\n", ba[i]);
             ba_stripped[j] = ba[i];
             ba_stripped[j+1] = ba[i+1];
             ba_stripped[j+2] = ba[i+2];
@@ -154,11 +160,13 @@ void createTree(TreeNode *root, unsigned int *masks, unsigned int masks_size){
         }
     }
     for(i=0; i< root->no_children; i++){
-        root->children[i] = create_treenode(root);
+        root->children[i] = create_treenode(ba_stripped[i*3], ba_stripped[i*3 + 1], 10); //last parameter children count (calculate? / recursive?)
     }
-    root->no_children
-    root->children[]
-    printf("gg\n");
+
+    printf("1st level created\n");
+
+    //we have to pass recursively a subset of masks for each child
+
 }
 
 

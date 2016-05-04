@@ -1,44 +1,36 @@
 #ifndef HEADER_GENERATOR
 #define HEADER_GENERATOR
-//For generating random sets of IPs and Masks using a CPU
 
-#include "stdio.h"
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-#include "winsock.h"
-#include "ctype.h"
 #include "time.h"
-#include "functions.h"
-#include "stdint.h"
-#include "structures.h"
-#include "print.h"
+#include "stdlib.h"
+#include "bruteforce.h"
 
-int generate_ip_addresses(u_char *ips);
-int generate_masks(u_char *masks);
-
-int generate_ip_addresses(u_char *ips){
-	srand(time(NULL)%10);
-	int r;
-	for (int i = 0; i < NUM_IPS*IPV4_B; i++){
-		r = rand() % 256;
+void generate_ip_addresses(unsigned int *ips){
+	int i, r;
+	srand(time(NULL) % 99 * 3);
+	for (i = 0; i< NUM_IPS; i++){
+		r = rand() << 16;
+		r = r | rand();
+		if (r<0)
+			r = -r;
 		ips[i] = r;
 	}
-	//print_ip(ips);
-	return 0;
 }
 
-int generate_masks(u_char *masks){
-	srand(time(NULL)%50);
-	int r;
-	for (int i = 1; i < NUM_MASKS*IPV4M_B+1; i++){
-		if (i%IPV4M_B==0)
-			r = (rand() % 32)+1;
+void generate_ip_masks(unsigned int *masks){
+	int i, r;
+	srand(time(NULL) % 10 * 99);
+	for (i = 0; i< NUM_MASKS * 2; i++){
+		if (i % 2 == 0){
+			r = rand() << 16;
+			r = r | rand();
+		}
 		else
-			r = rand() % 256;
-		masks[i - 1] = r;
+			r = rand() % 32 + 1;
+		if (r < 0)
+			r = -r;
+		masks[i] = r;
 	}
-	//print_mask(masks);
-	return 0;
 }
 
 #endif

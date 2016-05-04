@@ -5,17 +5,6 @@
 #define NUM_MASKS 100
 #define MAX_MASK 0xFFFFFFFF
 
-
-/*void bruteforceTry(unsigned int *ips, unsigned int *masks, unsigned int *assignedMasks){
-    unsigned int a = 8;
-    unsigned int b = 7;
-    unsigned int important_bits = 31;
-    if(check_assign(&a, &b, important_bits))
-        printf("good");
-    else
-        printf("bad");
-}*/
-
 int check_assign(unsigned int *ip, unsigned int *mask, int sbs){
     unsigned int important_bits_mask = MAX_MASK << (32-sbs); // this makes from (1111 1111 << 5 ) == 1110 0000
 

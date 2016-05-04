@@ -8,9 +8,9 @@
 
 void generate_ip_addresses(unsigned int *ips){
     int i, r;
-    seedMT(time(NULL)%99 * 3);
+    srand(time(NULL)%99 * 3);
     for(i=0; i< NUM_IPS; i++){
-        r = randomMT();
+        r = rand();
         if(r<0)
             r = -r;
         ips[i] = r;
@@ -19,12 +19,12 @@ void generate_ip_addresses(unsigned int *ips){
 
 void generate_ip_masks(unsigned int *masks){
     int i, r;
-    seedMT(time(NULL)%10* 99);
+    srand(time(NULL)%10* 99);
     for(i=0; i< NUM_MASKS*2; i++){
         if(i%2 == 0)
-            r = randomMT();
+            r = rand();
         else
-            r = randomMT()%32 + 1;
+            r = rand()%32 + 1;
         if(r < 0 )
             r = -r;
         masks[i] = r;
