@@ -1,7 +1,7 @@
 #ifndef HEADER_TREE
 #define HEADER_TREE
 
-#include "winsock.h"
+
 /*
 A tree structure definitions
 mem for children has to be allocated on create

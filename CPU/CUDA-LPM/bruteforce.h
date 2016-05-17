@@ -2,7 +2,7 @@
 #define HEADER_BRUTEFORCE
 
 #define NUM_IPS 500
-#define NUM_MASKS 100
+#define NUM_MASKS 20
 #define MAX_MASK 0xFFFFFFFF
 
 int check_assign(unsigned int *ip, unsigned int *mask, int sbs){
