@@ -22,9 +22,9 @@ __device__ int check_assign(unsigned int *ip, unsigned int *mask, int sbs){
 __global__ void bruteforceKernel(unsigned int *ips, unsigned int *masks, unsigned int *assignedMasks){
 	unsigned int i, j, bestMaskLength = 0, currMaskLength, assignedMaskIndex, currMask;
 	i = blockDim.x * blockIdx.x + threadIdx.x;
-	
+
 	if (i < NUM_IPS){
-	
+
 		bestMaskLength = 0;
 		assignedMaskIndex = i << 1; //since #assignedMasks is == 2*NUM_IPS | shift left by 1 = *2
 
@@ -45,7 +45,7 @@ __global__ void bruteforceKernel(unsigned int *ips, unsigned int *masks, unsigne
 		if (bestMaskLength == 0){ //if no best mask found assign default gateway 0.0.0.0/0
 			assignedMasks[assignedMaskIndex] = 0; assignedMasks[assignedMaskIndex + 1] = 0;
 		}
-	
+
 	}
 }
 //Semi-Bruteforce algorithm for assigning IPs to Masks by longest prefix match the assignedMasks is a result(it stores just masks but on places that correspond to given array of IPs)

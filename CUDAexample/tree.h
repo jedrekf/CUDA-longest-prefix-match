@@ -10,10 +10,10 @@ mem for children has to be allocated on create
 //structure for tree
 typedef struct TreeNode{
 	struct TreeNode **children;
-	//b for bit b=zero || b=one depending on wether the current node is left or righ, null for head
 	u_char key;
 	//array of important bits stored as 1 byte [0 1 0 1 0 0 0 0] -> [0 2 0 4 0 0 0 0]
 	u_char bits;
+	u_char eom; //signifies end of mask
 	u_char no_children;
 } TreeNode;
 
@@ -25,10 +25,11 @@ void destroy_treenode(TreeNode *node);
 // key -value of a current part of IP address
 // bits- number of significant bits(from prefix)
 // no_children- number of children the node will have
-TreeNode *create_treenode(u_char _key, u_char _bits, u_char _no_children){
+TreeNode *create_treenode(u_char _key, u_char _bits, u_char _eom, u_char _no_children){
     int i;
 	TreeNode *node = (TreeNode*)malloc(sizeof(TreeNode));
-	node->bits = (u_char)malloc(sizeof(u_char));
+	node->bits = _bits;
+	node->eom = _eom;
 	node->key = _key;
 	node->no_children = _no_children;
 	node->children = (TreeNode**)malloc(_no_children * sizeof(TreeNode));

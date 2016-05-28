@@ -28,38 +28,6 @@ unsigned int getByteMask(u_char byte_number){
 
 }
 
-void bubbleSort( unsigned int *masks, unsigned int masks_size, u_char byte_number){
-    unsigned int temp, byte_mask, offset, current_mask, next_mask;
-    byte_mask = getByteMask(byte_number);
-    offset =  (INT_SIZE - ((sizeof(int) - byte_number)*8));
-    int x, y;
-    for(x=0; x<masks_size; x+=2)
-	{
-
-		for(y=0; y<masks_size-2; y+=2)
-
-		{
-            current_mask = masks[y] & byte_mask;
-            current_mask = current_mask >> offset;
-            next_mask = masks[y+2] & byte_mask;
-            next_mask = next_mask >> offset;
-			if(current_mask>next_mask)
-			{
-
-				temp = masks[y+2];
-
-				masks[y+2] = masks[y];
-
-				masks[y] = temp;
-
-			}
-
-		}
-
-	}
-
-}
-
 // sets up a children array of size 256 of{0,1} such that an index corresponds to a value of a mask [0, 0, 0, 3, 4, 0, 6, 0, 0, 0, 11, ...]
 void childrenArray(u_char* chldrn_arr, unsigned int *masks, unsigned int masks_size, u_char byte_number){
     unsigned int i, byte_mask, current_mask, offset;
@@ -164,7 +132,7 @@ void createTree(TreeNode *root, unsigned int *masks, unsigned int masks_size){
     u_char *ba_stripped = (u_char*)malloc(children_count * 3 * sizeof(u_char)); //or counter + 1
     int j=0;
     for(i=0; i<BYTE_MAX*3; i+=3){
-        if(!(ba[i] == 0 && ba[i+1] == 0 &&ba[i+2] == 1)){ //check if the Byte address appeared at all
+        if(!(ba[i] == 0 && ba[i+1] == 0 && ba[i+2] == 1)){ //check if the Byte address appeared at all
            // printf("node key: %d\n", ba[i]);
             ba_stripped[j] = ba[i];
             ba_stripped[j+1] = ba[i+1];
@@ -172,10 +140,6 @@ void createTree(TreeNode *root, unsigned int *masks, unsigned int masks_size){
             j+=3;
         }
     }
-    /*
-    for(i=0; i< root->no_children; i++){
-        root->children[i] = create_treenode(ba_stripped[i*3], ba_stripped[i*3 + 1], 10); //last parameter children count (calculate? / recursive?)
-    }*/
 
     printf("1st level calculated\n");
 
@@ -184,7 +148,6 @@ void createTree(TreeNode *root, unsigned int *masks, unsigned int masks_size){
         temp = masks[i] << 8;
         printf("%d.%d /%d\n", masks[i] >> 24, temp >> 24, masks[i+1]);
     }
-    //we have to pass recursively a subset of masks for each child
 
 }
 

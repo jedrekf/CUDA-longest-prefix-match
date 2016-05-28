@@ -2,16 +2,75 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "functions.h"
-#include "trie.h"
+#include "tree.h"
 #include "generator.h"
 #include "bruteforce.h"
+#include "tree_creator.h"
 #include "print.h"
+#include <thrust/device_vector.h>
+#include <thrust/copy.h>
+#include <thrust/sort.h>
+#include <list>
+#include <vector>
+
+__global__ void assignMaskValues(unsigned int *keys, int *values, unsigned int *masks, int size){
+	int i = blockDim.x * blockIdx.x + threadIdx.x;
+	if (i < size){
+		if (i % 2){
+			values[i/2] = masks[i];
+		}
+		else{
+			keys[i/2] = masks[i];
+		}
+	}
+}
+
+__global__ void assignSortedMaskValues(unsigned int *masks, unsigned int *keys, int *values, int size){
+	int i = blockDim.x * blockIdx.x + threadIdx.x;
+	if (i < size){
+		if (i % 2){
+			masks[i] = values[i / 2];
+		}
+		else{
+			masks[i] = keys[i / 2];
+		}
+	}
+}
+
+void sortMasks(unsigned int *masks, int masks_size){
+	int i;
+	unsigned int *d_keys, *d_masks; int *d_values;
+	
+	unsigned int *keys = (unsigned int*)malloc((masks_size/2)*sizeof(unsigned int));
+	int *values = (int*)malloc((masks_size/2)*sizeof(int));
+	
+	cudaMalloc((void**)&d_masks, masks_size*sizeof(unsigned int));
+	cudaMalloc((void**)&d_keys, (masks_size / 2)*sizeof(unsigned int));
+	cudaMalloc((void**)&d_values, (masks_size/2)*sizeof(int));
+	
+	cudaMemcpy(d_masks, masks, masks_size*sizeof(unsigned int), cudaMemcpyHostToDevice);
+
+	assignMaskValues << <(masks_size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >> >(d_keys, d_values, d_masks, masks_size);
+	
+	cudaMemcpy(keys, d_keys, (masks_size / 2)*sizeof(unsigned int), cudaMemcpyDeviceToHost);
+	cudaMemcpy(values, d_values, (masks_size / 2)*sizeof(int), cudaMemcpyDeviceToHost);
+	/*---------------- SORT---------------*/
+	thrust::sort_by_key(keys, keys + masks_size/2, values);
+
+	cudaMemcpy(d_keys, keys, (masks_size / 2)*sizeof(unsigned int), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_values, values, (masks_size / 2)*sizeof(unsigned int), cudaMemcpyHostToDevice);
+
+	assignSortedMaskValues << <(masks_size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >> >(d_masks, d_keys, d_values, masks_size);
+
+	cudaMemcpy(masks, d_masks, masks_size*sizeof(unsigned int), cudaMemcpyDeviceToHost);
+
+	free(keys); free(values);
+	cudaFree(d_keys); cudaFree(d_masks); cudaFree(d_values);
+}
 
 int main()
 { 
-	
 	cudaError_t cudaStatus;
-	//time structures
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
@@ -30,9 +89,12 @@ int main()
 	init();
 
 	generate_ip_addresses(ips);
-	printf("IPs generated on CPU");
+	printf("IPs generated on CPU\n");
 	generate_ip_masks(masks);
-	printf("Masks generated on CPU");
+	printf("Masks generated on CPU\n");
+	///////////////////////////// SORT ///////////////////////////////////
+	sortMasks(masks, NUM_MASKS*2);
+	printf("Masks sorted.");
 	////////////////////////////// BRUTE FORCE //////////////////////////////////
 	cudaEventRecord(start);
 	bruteforce(ips, masks, assignedMasks);
@@ -41,28 +103,19 @@ int main()
 	cudaEventElapsedTime(&elapsedTime, start, stop);
 	printf("time elapsed: %f\n", elapsedTime);
 	writeToFile(ips, assignedMasks);
-	////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////	TREE /////////////////////////////////
 
-	//Array for determining the first byte of mask (limit tree nodes)
-	/*u_char *byteMaskArr = (u_char*)malloc(U_CHAR_SIZE*sizeof(u_char));
-	getByteMaskArr(byteMaskArr, masks, 1); //sets up array of used ipmasks (their first Byte)
-	u_char no_children_node = countUniqueMaskBytes(byteMaskArr);
-
-	TrieNode *root = (TrieNode *)malloc(sizeof(TrieNode));
-	root = create_trienode(0, 0, 0,no_children_node);
-	createTrie(root, masks);
-	//here assign ips to masks - tree traversing
-	destroy_trienode(root);
+	TreeNode *root = (TreeNode *)malloc(sizeof(TreeNode));
 	
-	//count and take values of nodes from this
-	printByteMaskArr(byteMaskArr);*/
+	//createTree(root, masks, NUM_MASKS*2);
+	//here assign ips to masks - tree traversing
+	//destroy_treenode(root);
 
+	free(root);
 	free(ips);
 	free(masks);
-	//free(byteMaskArr);
 	free(assignedMasks);
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
+
     cudaStatus = cudaDeviceReset();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceReset failed!");

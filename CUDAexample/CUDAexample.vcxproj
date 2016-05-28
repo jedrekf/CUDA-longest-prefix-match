@@ -164,7 +164,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="print.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="structures.h" />
-    <ClInclude Include="trie.h" />
+    <ClInclude Include="tree.h" />
+    <ClInclude Include="tree_creator.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CUDA-longest-prefix-match.rc" />

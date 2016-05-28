@@ -43,7 +43,7 @@ void printByteMaskArr(u_char *byteMasks){
 	}
 }
 
-void printTrieNode(TrieNode *node){
+void printTrieNode(TreeNode *node){
 	printf("Number of children of a node: %d\n nodes value: %d\n", node->no_children, node->key);
 }
 

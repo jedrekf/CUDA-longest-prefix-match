@@ -18,7 +18,6 @@ char *byte_to_binary(int x)
     {
         strcat(b, ((x & z) == z) ? "1" : "0");
     }
-
     return b;
 }
 
