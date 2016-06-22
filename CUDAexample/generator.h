@@ -5,6 +5,9 @@
 #include "stdlib.h"
 #include "bruteforce.h"
 
+void generate_ip_addresses(unsigned int *ips);
+void generate_ip_masks(unsigned int *masks);
+
 void generate_ip_addresses(unsigned int *ips){
 	int i, r;
 	srand(time(NULL) % 99 * 3);

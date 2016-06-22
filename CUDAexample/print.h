@@ -10,6 +10,8 @@ void print_ip_bin(u_char *ip);
 void print_ip(u_char *ips);
 void print_mask(u_char *masks);
 void printByteMaskArr(u_char *byteMasks);
+void printAssigned(u_char* ips, u_char* masks);
+void writeToFile(unsigned int *ips, unsigned int *masks);
 
 void print_ip_bin(u_char ipByte){
 	int i = 0;

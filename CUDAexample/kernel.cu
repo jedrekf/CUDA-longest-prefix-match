@@ -71,9 +71,11 @@ void sortMasks(unsigned int *masks, int masks_size){
 int main()
 { 
 	cudaError_t cudaStatus;
-	cudaEvent_t start, stop;
+	cudaEvent_t start, stop, start_tree, stop_tree;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
+	cudaEventCreate(&start_tree);
+	cudaEventCreate(&stop_tree);
 	float elapsedTime;
 	
 	///////////////////////////// INIT IPS AND MASKS ///////////////////////////
@@ -101,14 +103,22 @@ int main()
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	printf("time elapsed: %f\n", elapsedTime);
+	printf("time elapsed for bruteforce: %f\n", elapsedTime);
 	writeToFile(ips, assignedMasks);
 	//////////////////////////////	TREE /////////////////////////////////
 
 	TreeNode *root = (TreeNode *)malloc(sizeof(TreeNode));
-	
-	//createTree(root, masks, NUM_MASKS*2);
-	//here assign ips to masks - tree traversing
+	cudaEventRecord(start_tree);
+
+	createTree(root, masks, NUM_MASKS*2);
+	//TODO here assign ips to masks - tree 
+
+	cudaEventRecord(stop_tree);
+	cudaEventSynchronize(stop_tree);
+	cudaEventElapsedTime(&elapsedTime, start_tree, stop_tree);
+	printf("time elapsed for tree search: %f\n", elapsedTime);
+
+	//not creating a tree so whatever
 	//destroy_treenode(root);
 
 	free(root);
