@@ -47,25 +47,6 @@ __global__ void childrenArrayImproved(u_char* chldrn_arr, unsigned int *masks, u
 
 }
 
-// sets up a children array of size 256 of{0,1} such that an index corresponds to a value of a mask [0, 0, 0, 3, 4, 0, 6, 0, 0, 0, 11, ...]
-__global__ void childrenArray(u_char* chldrn_arr, unsigned int *masks, unsigned int masks_number, u_char byte_number){
-	unsigned int i, byte_mask, current_mask, offset;
-	i = blockDim.x * blockIdx.x + threadIdx.x;
-
-
-	byte_mask = getByteMask(byte_number);
-	offset = ((sizeof(int) - byte_number) * 8);
-
-	if (i < masks_number){
-		i = i << 1;
-		current_mask = masks[i] & byte_mask;
-		current_mask = current_mask >> offset;
-
-		chldrn_arr[current_mask] = 1;
-		printf("%d\n", current_mask);
-	}
-}
-
 // Count number of children to be created for current address Byte
 u_char childrenCount(u_char *chldrnArr){
 	int i;
@@ -119,36 +100,7 @@ __global__ void byteArrayImproved(u_char *baBytes, u_char *baBits, u_char *baEom
 		}
 	}
 }
-// Create ByteArray[] an array such that [key, bits, EndOfMask]  example:  [23, 0100100, 0, ...]
-__global__ void byteArray(u_char *ba, unsigned int *masks, int *split, int split_size, u_char byte_number){
-	int i = blockDim.x * blockIdx.x + threadIdx.x;
-	unsigned int byte_mask, curr_mask, curr_prefix;
-	u_char temp, offset;
-	if (i < (split_size >> 1)){ //have to check limitations, but ba after this operation should have size of #children
-		i = (i << 1);
-		ba[i * 3] = split[i];
-		for (int j = split[i]; j < (split[i] + ((split[i + 1]) << 1)); j++){ //*2 because size of masks[X/x]
-			curr_mask = masks[j]; j++;
-			curr_prefix = masks[j];
 
-			if (curr_prefix < 8){ //if prefix at this moment <8 means we mark it on an array as one of endings for this node
-				offset = curr_prefix;
-				temp = ba[i * 3 + 1];
-				u_char newval = (temp >> offset) | 1;
-				newval = newval << offset;
-				ba[i * 3 + 1] = (ba[i * 3 + 1] | newval);
-				ba[i * 3 + 2] = 1;
-			}
-			else if (masks[j] == 8){ //here the mask prefix is set to 0 so in the next iteration the node will be marked to eom (no bits added)
-				masks[j] -= 8;
-			}
-			else{
-				masks[j] -= 8;
-			}
-			printf("ba[%d , %d, %d] { %d %d %d }\n", (i * 3), (i * 3 + 1), (i * 3 + 2), ba[j], ba[j + 1], ba[j + 2]);
-		}
-	}
-}
 //marks number of children for a given Byte of masks
 __global__ void calc_separate_chldrn(u_char *separate_chldrn_arr, unsigned int *masks, int *split, int split_size, u_char byte_number){
 	
@@ -259,6 +211,7 @@ void createTreeImproved(TreeNode *root, MaskList maskList, int masks_size){
 	for (i = 0; i < chldrn_count; i++){
 		printf("ba[%d] -> {%d, %d, %d}\n", i, ba.bytes[i], ba.bits[i], ba.eom[i]);
 	}
+
 	////here run a kernel for each split block to calculate children
 	//cudaMalloc((void**)&d_chldrn_arr, chldrn_count*U_CHAR_SIZE*sizeof(u_char));
 
@@ -296,106 +249,5 @@ void createTreeImproved(TreeNode *root, MaskList maskList, int masks_size){
 	free(split.count);
 	free(chldrn_arr);
 }
-
-// Function creating a tree, root- of the tree, masks - set of masks, 
-void createTree(TreeNode *root, unsigned int *masks, int masks_size){
-	int i;
-	u_char chldrn_count;
-	u_char *chldrn_arr = (u_char*)malloc(U_CHAR_SIZE*sizeof(u_char));
-	for (i = 0; i< U_CHAR_SIZE; i++){
-		chldrn_arr[i] = 0;
-	}
-
-	u_char *d_chldrn_arr;
-	unsigned int *d_masks;
-
-	cudaMalloc((void**)&d_chldrn_arr, U_CHAR_SIZE*sizeof(u_char));
-	cudaMalloc((void**)&d_masks, masks_size*sizeof(unsigned int));
-
-	cudaMemcpy(d_chldrn_arr, chldrn_arr, U_CHAR_SIZE*sizeof(u_char), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_masks, masks, masks_size*sizeof(unsigned int), cudaMemcpyHostToDevice);
-
-	childrenArray << <(NUM_MASKS + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >> > (d_chldrn_arr, d_masks, masks_size / 2, 1);
-	cudaMemcpy(chldrn_arr, d_chldrn_arr, U_CHAR_SIZE*sizeof(u_char), cudaMemcpyDeviceToHost);
-
-	chldrn_count = childrenCount(chldrn_arr);
-
-	cudaFree(d_chldrn_arr);
-
-	root = create_treenode(0, 0, 1, chldrn_count); //root of a tree allocated
-
-
-	//ip split to blocks that can't be concurrently calculated(same ip Byte)
-	int split_size = 0;
-	int *split = (int*)malloc(2 * U_CHAR_SIZE*sizeof(int));
-	int counter = 1, j = -2;
-	int lastipB = 9999, ipB; //TODO change in next iteration the bytes to 16 and apply a mask
-	for (i = 0; i < masks_size; i += 2){
-		ipB = masks[i] >> 24;
-		if (lastipB == ipB){
-			counter++;
-		}
-		else{
-			j += 2;
-			split[j] = i / 2;
-			counter = 1;
-			lastipB = ipB;
-		}
-		split[j + 1] = counter;
-		printf("split arr[%d] -> %d ; ", j, split[j]);
-		printf("split arr[%d] -> %d\n", j+1, split[j+1]);
-	}
-
-	split_size = j + 2;
-	if (split_size / 2 == chldrn_count){
-		printf("correct splitting for blocks.\n");
-	}
-
-	u_char *ba = (u_char*)calloc(chldrn_count * 3, sizeof(u_char)); //ba [IP_B, 1-8, 0-1, ...]
-	u_char *d_ba;
-	int *d_split;
-
-	cudaMalloc((void**)&d_ba, chldrn_count * 3 * sizeof(u_char));
-	cudaMalloc((void**)&d_split, split_size* sizeof(int));
-	cudaMemcpy(d_split, split, split_size * sizeof(int), cudaMemcpyHostToDevice);
-
-	byteArray << < (chldrn_count + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >> >(d_ba, d_masks, split, split_size, 1);
-
-	cudaMemcpy(ba, d_ba, chldrn_count * 3 * sizeof(u_char), cudaMemcpyDeviceToHost);
-	cudaMemcpy(masks, d_masks, masks_size * sizeof(unsigned int), cudaMemcpyDeviceToHost);
-
-	//here run a kernel for each split block to calculate children
-	cudaMalloc((void**)&d_chldrn_arr, chldrn_count*U_CHAR_SIZE*sizeof(u_char));
-
-	calc_separate_chldrn << <chldrn_count, THREADS_PER_BLOCK >> > (d_chldrn_arr, d_masks, split, split_size, 2);
-	printf("separate children calculated");
-	free(chldrn_arr);
-	chldrn_arr = (u_char*)malloc(chldrn_count*U_CHAR_SIZE*sizeof(u_char));
-	for (i = 0; i< chldrn_count* U_CHAR_SIZE; i++){
-		chldrn_arr[i] = 0;
-	}
-	cudaMemcpy(chldrn_arr, d_chldrn_arr, chldrn_count * U_CHAR_SIZE * sizeof(u_char), cudaMemcpyDeviceToHost);
-	cudaFree(d_chldrn_arr);
-
-	//count children for bigger chldrn_arr
-
-	//create a first level of a tree based on ba data
-	//for (i = 0; i < chldrn_count*3; i+=3){
-	//	root->children[i / 3] = create_treenode(ba[i], ba[i + 1], ba[i + 2], 22);
-	//}
-
-
-
-	cudaFree(d_masks);
-	cudaFree(d_split);
-	cudaFree(d_ba);
-
-	free(ba);
-
-	printf("created root with %d children\n", chldrn_count);
-
-	free(chldrn_arr);
-}
-
 
 #endif

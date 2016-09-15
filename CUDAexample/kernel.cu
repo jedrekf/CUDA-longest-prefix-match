@@ -120,7 +120,6 @@ int main()
 	cudaEventRecord(start_tree);
 
 	createTreeImproved(root, masksList, NUM_MASKS);
-	//createTree(root, masks, NUM_MASKS*2);
 	//TODO here assign ips to masks - tree 
 
 	cudaEventRecord(stop_tree);
