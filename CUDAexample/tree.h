@@ -18,7 +18,7 @@ typedef struct TreeNode{
 } TreeNode;
 
 
-TreeNode *create_treenode(u_char _key, u_char _bits, u_char _no_children);
+TreeNode *create_treenode(u_char _key, u_char _bits,u_char _eom, u_char _no_children);
 void destroy_treenode(TreeNode *node);
 
 
@@ -26,7 +26,7 @@ void destroy_treenode(TreeNode *node);
 // bits- number of significant bits(from prefix)
 // no_children- number of children the node will have
 TreeNode *create_treenode(u_char _key, u_char _bits, u_char _eom, u_char _no_children){
-    int i;
+	int i;
 	TreeNode *node = (TreeNode*)malloc(sizeof(TreeNode));
 	node->bits = _bits;
 	node->eom = _eom;
@@ -38,7 +38,7 @@ TreeNode *create_treenode(u_char _key, u_char _bits, u_char _eom, u_char _no_chi
 }
 
 void destroy_treenode(struct TreeNode *node){
-    int i;
+	int i;
 	if (node == NULL) return;
 
 	for (i = 0; i < node->no_children; i++)
@@ -46,8 +46,6 @@ void destroy_treenode(struct TreeNode *node){
 
 	free(node);
 }
-
-
 
 
 

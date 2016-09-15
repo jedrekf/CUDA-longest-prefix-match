@@ -105,12 +105,22 @@ int main()
 	cudaEventElapsedTime(&elapsedTime, start, stop);
 	printf("time elapsed for bruteforce: %f\n", elapsedTime);
 	writeToFile(ips, assignedMasks);
-	//////////////////////////////	TREE /////////////////////////////////
-
+	//////////////////////////////	TREE /////////////////////////////////\
+	
+	MaskList masksList;
+	masksList.masks = (int*)malloc(NUM_MASKS*sizeof(int));
+	masksList.prefixes = (u_char*)malloc(NUM_MASKS*sizeof(u_char));
+	int j = 0;
+	for (int i = 0; i < (NUM_MASKS * 2); i++){
+		masksList.masks[j] = masks[i];
+		masksList.prefixes[j] = masks[++i];
+		j++;
+	}
 	TreeNode *root = (TreeNode *)malloc(sizeof(TreeNode));
 	cudaEventRecord(start_tree);
 
-	createTree(root, masks, NUM_MASKS*2);
+	createTreeImproved(root, masksList, NUM_MASKS);
+	//createTree(root, masks, NUM_MASKS*2);
 	//TODO here assign ips to masks - tree 
 
 	cudaEventRecord(stop_tree);
@@ -125,6 +135,8 @@ int main()
 	free(ips);
 	free(masks);
 	free(assignedMasks);
+	free(masksList.masks);
+	free(masksList.prefixes);
 
     cudaStatus = cudaDeviceReset();
     if (cudaStatus != cudaSuccess) {
