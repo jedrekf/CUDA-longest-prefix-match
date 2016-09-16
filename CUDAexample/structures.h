@@ -5,8 +5,8 @@
 
 //1536 max threads
 #define THREADS_PER_BLOCK 1024
-#define NUM_MASKS 20
-#define NUM_IPS 500
+#define NUM_MASKS 50
+#define NUM_IPS 10000
 #define IPV4_B 4
 #define IPV4M_B 5
 #define U_CHAR_SIZE 256
@@ -16,6 +16,7 @@
 typedef struct MaskList{
 	int* masks;
 	u_char* prefixes;
+	u_char* removed;
 }MaskList;
 
 typedef struct ByteArray{

@@ -40,7 +40,6 @@ __global__ void bruteforceKernel(unsigned int *ips, unsigned int *masks, unsigne
 					assignedMasks[assignedMaskIndex + 1] = currMaskLength;
 				}
 			}
-
 		}
 		if (bestMaskLength == 0){ //if no best mask found assign default gateway 0.0.0.0/0
 			assignedMasks[assignedMaskIndex] = 0; assignedMasks[assignedMaskIndex + 1] = 0;
