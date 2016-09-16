@@ -38,7 +38,6 @@ __global__ void assignSortedMaskValues(unsigned int *masks, unsigned int *keys, 
 }
 
 void sortMasks(unsigned int *masks, int masks_size){
-	int i;
 	unsigned int *d_keys, *d_masks; int *d_values;
 	
 	unsigned int *keys = (unsigned int*)malloc((masks_size/2)*sizeof(unsigned int));
@@ -105,26 +104,42 @@ int main()
 	cudaEventElapsedTime(&elapsedTime, start, stop);
 	printf("time elapsed for bruteforce: %f\n", elapsedTime);
 	writeToFile(ips, assignedMasks);
-	//////////////////////////////	TREE /////////////////////////////////
+	//////////////////////////////	TREE /////////////////////////////////\
+	
+	MaskList masksList;
+	masksList.masks = (int*)malloc(NUM_MASKS*sizeof(int));
+	masksList.prefixes = (u_char*)malloc(NUM_MASKS*sizeof(u_char));
+	masksList.removed = (u_char*)calloc(NUM_MASKS, sizeof(u_char));
 
-	TreeNode *root = (TreeNode *)malloc(sizeof(TreeNode));
+	int j = 0;
+	for (int i = 0; i < (NUM_MASKS * 2); i++){
+		masksList.masks[j] = masks[i];
+		masksList.prefixes[j] = masks[++i];
+		j++;
+	}
+
 	cudaEventRecord(start_tree);
 
-	createTree(root, masks, NUM_MASKS*2);
-	//TODO here assign ips to masks - tree 
+	TreeNode *root = createTreeImproved(masksList, NUM_MASKS);
+	
+	printf("Tree created.\n");
+	//TODO tree search algorithm 
+	traverseTree(ips, root, NUM_MASKS);
 
 	cudaEventRecord(stop_tree);
 	cudaEventSynchronize(stop_tree);
 	cudaEventElapsedTime(&elapsedTime, start_tree, stop_tree);
 	printf("time elapsed for tree search: %f\n", elapsedTime);
 
-	//not creating a tree so whatever
 	//destroy_treenode(root);
 
 	free(root);
 	free(ips);
 	free(masks);
 	free(assignedMasks);
+	free(masksList.masks);
+	free(masksList.prefixes);
+	free(masksList.removed);
 
     cudaStatus = cudaDeviceReset();
     if (cudaStatus != cudaSuccess) {
